@@ -11,22 +11,25 @@ phases:
       python: 3.9
     commands:
       - echo "=== INSTALL PHASE START ==="
-      - pip install --upgrade awscli
-      - echo "AWS CLI version:" $(aws --version)
+      - echo "Removing any conflicting AWS CLI versions..."
+      - sudo rm -f /usr/local/bin/aws || true
+      - sudo rm -f /usr/bin/aws || true
+      - echo "Installing AWS CLI v2..."
+      - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+      - unzip -q awscliv2.zip
+      - sudo ./aws/install --update
+      - aws --version
       - echo "=== INSTALL PHASE END ==="
 
   pre_build:
     commands:
       - echo "=== PRE_BUILD PHASE START ==="
-      - echo "Validating CloudFormation template..."
       - aws cloudformation validate-template --region $AWS_REGION --template-body file://$TEMPLATE_FILE
-      - echo "Template validation complete."
       - echo "=== PRE_BUILD PHASE END ==="
 
   build:
     commands:
       - echo "=== BUILD PHASE START ==="
-      - echo "Deploying CloudFormation stack in region $AWS_REGION..."
       - aws cloudformation deploy \
           --region $AWS_REGION \
           --template-file $TEMPLATE_FILE \
