@@ -23,22 +23,22 @@ phases:
       - aws cloudformation validate-template --region $AWS_REGION --template-body file://$TEMPLATE_FILE
       - echo "=== PRE_BUILD PHASE END ==="
 
-  build:
-    commands:
-      - echo "=== BUILD PHASE START ==="
-      - >
-        aws cloudformation deploy
-        --region "$AWS_REGION"
-        --template-file "$TEMPLATE_FILE"
-        --stack-name "$STACK_NAME"
-        --capabilities CAPABILITY_NAMED_IAM
-        --parameter-overrides
-        EC2AMIID=ami-03814457ed908d8f6
-        EC2KeyPairName=andrew-keypair
-        EC2InstanceType=t2.micro
-        SubnetID=subnet-0d4cc4dcd1ae2b192
-        SecurityGroupID=sg-0de74e2ea3383ef00
-      - echo "=== BUILD PHASE END ==="
+build:
+  commands:
+    - set -x  # enables shell debug output
+    - aws cloudformation deploy \
+        --region "$AWS_REGION" \
+        --template-file "$TEMPLATE_FILE" \
+        --stack-name "$STACK_NAME" \
+        --capabilities CAPABILITY_NAMED_IAM \
+        --parameter-overrides \
+          EC2AMIID=ami-03814457ed908d8f6 \
+          EC2KeyPairName=andrew-keypair \
+          EC2InstanceType=t2.micro \
+          SubnetID=subnet-0d4cc4dcd1ae2b192 \
+          SecurityGroupID=sg-0de74e2ea3383ef00 \
+        || (echo "Deployment failed, fetching events..." && aws cloudformation describe-stack-events --stack-name "$STACK_NAME" --region "$AWS_REGION" && exit 1)
+
 
   post_build:
     commands:
