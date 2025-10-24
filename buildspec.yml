@@ -4,7 +4,7 @@ env:
   variables:
     STACK_NAME: "application-ec2-stack"
     TEMPLATE_FILE: "ec2.yaml"
-    PARAMETERS: |
+    PARAMETERS: >
       ParameterKey=EC2AMIID,ParameterValue=ami-03814457ed908d8f6
       ParameterKey=EC2KeyPairName,ParameterValue=andrew-keypair
       ParameterKey=EC2InstanceType,ParameterValue=t2.micro
@@ -37,7 +37,7 @@ phases:
           aws cloudformation delete-stack --stack-name $STACK_NAME
           echo "Waiting for stack deletion to complete..."
           aws cloudformation wait stack-delete-complete --stack-name $STACK_NAME
-          
+
         else
           echo "Invalid ACTION parameter. Use 'deploy' or 'destroy'."
           exit 1
