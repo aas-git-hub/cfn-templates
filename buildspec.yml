@@ -7,24 +7,35 @@ env:
 
 phases:
   install:
+    runtime-versions:
+      python: 3.9
     commands:
-      - echo "Installing AWS CLI..."
+      - echo "=== INSTALL PHASE START ==="
       - pip install --upgrade awscli
+      - echo "AWS CLI version:" $(aws --version)
+      - echo "=== INSTALL PHASE END ==="
 
   pre_build:
     commands:
+      - echo "=== PRE_BUILD PHASE START ==="
       - echo "Validating CloudFormation template..."
       - aws cloudformation validate-template --region $AWS_REGION --template-body file://$TEMPLATE_FILE
+      - echo "Template validation complete."
+      - echo "=== PRE_BUILD PHASE END ==="
 
   build:
     commands:
-      - echo "Deploying CloudFormation stack..."
+      - echo "=== BUILD PHASE START ==="
+      - echo "Deploying CloudFormation stack in region $AWS_REGION..."
       - aws cloudformation deploy \
           --region $AWS_REGION \
           --template-file $TEMPLATE_FILE \
           --stack-name ec2-stack \
           --capabilities CAPABILITY_NAMED_IAM
+      - echo "=== BUILD PHASE END ==="
 
   post_build:
     commands:
-      - echo "Build completed successfully at $(date +"%Y-%m-%d %H:%M:%S %Z")"
+      - echo "=== POST_BUILD PHASE START ==="
+      - echo "Build completed successfully at $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+      - echo "=== POST_BUILD PHASE END ==="
