@@ -2,14 +2,10 @@ version: 0.2
 
 env:
   variables:
+    AWS_REGION: "ca-central-1"
     STACK_NAME: "application-ec2-stack"
     TEMPLATE_FILE: "ec2.yaml"
-    PARAMETERS: >
-      ParameterKey=EC2AMIID,ParameterValue=ami-03814457ed908d8f6
-      ParameterKey=EC2KeyPairName,ParameterValue=andrew-keypair
-      ParameterKey=EC2InstanceType,ParameterValue=t2.micro
-      ParameterKey=SubnetID,ParameterValue=subnet-0d4cc4dcd1ae2b192
-      ParameterKey=SecurityGroupID,ParameterValue=sg-0de74e2ea3383ef00
+    PARAMETERS: "ParameterKey=EC2AMIID,ParameterValue=ami-03814457ed908d8f6 ParameterKey=EC2KeyPairName,ParameterValue=andrew-keypair ParameterKey=EC2InstanceType,ParameterValue=t2.micro ParameterKey=SubnetID,ParameterValue=subnet-0d4cc4dcd1ae2b192 ParameterKey=SecurityGroupID,ParameterValue=sg-0de74e2ea3383ef00"
 
 phases:
   install:
@@ -23,20 +19,31 @@ phases:
   pre_build:
     commands:
       - echo "Validating CloudFormation template..."
-      - aws cloudformation validate-template --template-body file://${TEMPLATE_FILE}
+      - aws cloudformation validate-template \
+          --region $AWS_REGION \
+          --template-body file://${TEMPLATE_FILE}
 
   build:
     commands:
       - |
         if [ "$ACTION" == "deploy" ]; then
-          echo "Deploying CloudFormation stack: $STACK_NAME..."
-          aws cloudformation deploy --stack-name $STACK_NAME --template-file ${TEMPLATE_FILE} --parameter-overrides ${PARAMETERS} --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM
+          echo "Deploying CloudFormation stack: $STACK_NAME in $AWS_REGION..."
+          aws cloudformation deploy \
+            --region $AWS_REGION \
+            --stack-name $STACK_NAME \
+            --template-file ${TEMPLATE_FILE} \
+            --parameter-overrides ${PARAMETERS} \
+            --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM
 
         elif [ "$ACTION" == "destroy" ]; then
-          echo "Destroying CloudFormation stack: $STACK_NAME..."
-          aws cloudformation delete-stack --stack-name $STACK_NAME
+          echo "Destroying CloudFormation stack: $STACK_NAME in $AWS_REGION..."
+          aws cloudformation delete-stack \
+            --region $AWS_REGION \
+            --stack-name $STACK_NAME
           echo "Waiting for stack deletion to complete..."
-          aws cloudformation wait stack-delete-complete --stack-name $STACK_NAME
+          aws cloudformation wait stack-delete-complete \
+            --region $AWS_REGION \
+            --stack-name $STACK_NAME
 
         else
           echo "Invalid ACTION parameter. Use 'deploy' or 'destroy'."
