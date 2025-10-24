@@ -30,7 +30,12 @@ phases:
             --region $AWS_REGION \
             --stack-name $STACK_NAME \
             --template-file $TEMPLATE_FILE \
-            --parameter-overrides $PARAMETERS \
+            --parameter-overrides \
+              ParameterKey=EC2AMIID,ParameterValue=ami-03814457ed908d8f6 \
+              ParameterKey=EC2KeyPairName,ParameterValue=andrew-keypair \
+              ParameterKey=EC2InstanceType,ParameterValue=t2.micro \
+              ParameterKey=SubnetID,ParameterValue=subnet-0d4cc4dcd1ae2b192 \
+              ParameterKey=SecurityGroupID,ParameterValue=sg-0de74e2ea3383ef00 \
             --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM
 
         elif [ "$ACTION" == "destroy" ]; then
