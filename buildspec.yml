@@ -8,8 +8,6 @@ env:
 
 phases:
   install:
-    runtime-versions:
-      python: 3.9
     commands:
       - echo "=== INSTALL PHASE START ==="
       - echo "Installing AWS CLI v2..."
@@ -25,7 +23,7 @@ phases:
       - aws cloudformation validate-template --region $AWS_REGION --template-body file://$TEMPLATE_FILE
       - echo "=== PRE_BUILD PHASE END ==="
 
-    build:
+  build:
     commands:
       - echo "=== BUILD PHASE START ==="
       - >
@@ -41,7 +39,6 @@ phases:
         SubnetID=subnet-0d4cc4dcd1ae2b192
         SecurityGroupID=sg-0de74e2ea3383ef00
       - echo "=== BUILD PHASE END ==="
-
 
   post_build:
     commands:
