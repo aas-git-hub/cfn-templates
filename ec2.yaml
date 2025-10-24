@@ -1,36 +1,26 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Deploy a simple EC2 instance with Apache and WordPress
+Description: Deploy an EC2 instance in an existing VPC/Subnet
 
 Parameters:
   EC2AMIID:
-    Type: AWS::EC2::Image::Id
-    Description: Enter the EC2 AMI ID based on your OS
-
+    Type: String
+    Description: AMI ID to use for the EC2 instance
   EC2KeyPairName:
-    Type: AWS::EC2::KeyPair::KeyName
-    Description: Enter your key pair name
-
+    Type: String
+    Description: Existing EC2 Key Pair name
   EC2InstanceType:
     Type: String
-    Description: Enter the EC2 instance type
     Default: t2.micro
-    AllowedValues:
-      - t2.micro
-      - t3.micro
-      - t3.medium
-
+    Description: EC2 instance type
   SubnetID:
-    Type: String
-    Description: Enter your Subnet ID
-    Default: subnet-0d4cc4dcd1ae2b192
-
+    Type: AWS::EC2::Subnet::Id
+    Description: Subnet ID where the instance will be launched
   SecurityGroupID:
-    Type: String
-    Description: Enter your Security Group ID
-    Default: sg-0de74e2ea3383ef00
+    Type: AWS::EC2::SecurityGroup::Id
+    Description: Security Group ID to attach to the instance
 
 Resources:
-  MyEC2Instance:
+  EC2Instance:
     Type: AWS::EC2::Instance
     Properties:
       ImageId: !Ref EC2AMIID
@@ -39,17 +29,14 @@ Resources:
       SubnetId: !Ref SubnetID
       SecurityGroupIds:
         - !Ref SecurityGroupID
-      UserData:
-        Fn::Base64: !Sub |
-          #!/bin/bash
-          yum update -y
-          yum install -y httpd php php-mysql
-          systemctl enable httpd
-          systemctl start httpd
-          cd /var/www/html
-          echo "healthy" > healthy.html
-          wget https://wordpress.org/wordpress-6.7.1.tar.gz
-          tar -xzf wordpress-6.7.1.tar.gz
-          cp -r wordpress/* /var/www/html/
-          rm -rf wordpress wordpress-6.7.1.tar.gz
-          chown -R apache:apache /var/www/html
+      Tags:
+        - Key: Name
+          Value: CodeBuild-EC2-Instance
+
+Outputs:
+  InstanceId:
+    Description: The ID of the newly created EC2 instance
+    Value: !Ref EC2Instance
+  InstancePublicIP:
+    Description: The Public IP of the EC2 instance
+    Value: !GetAtt EC2Instance.PublicIp
