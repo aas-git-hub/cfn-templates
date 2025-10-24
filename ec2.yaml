@@ -1,0 +1,55 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Deploy a simple EC2 instance with Apache and WordPress
+
+Parameters:
+  EC2AMIID:
+    Type: AWS::EC2::Image::Id
+    Description: Enter the EC2 AMI ID based on your OS
+
+  EC2KeyPairName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: Enter your key pair name
+
+  EC2InstanceType:
+    Type: String
+    Description: Enter the EC2 instance type
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+      - t3.micro
+      - t3.medium
+
+  SubnetID:
+    Type: String
+    Description: Enter your Subnet ID
+    Default: subnet-0d4cc4dcd1ae2b192
+
+  SecurityGroupID:
+    Type: String
+    Description: Enter your Security Group ID
+    Default: sg-0de74e2ea3383ef00
+
+Resources:
+  MyEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref EC2AMIID
+      KeyName: !Ref EC2KeyPairName
+      InstanceType: !Ref EC2InstanceType
+      SubnetId: !Ref SubnetID
+      SecurityGroupIds:
+        - !Ref SecurityGroupID
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          yum update -y
+          yum install -y httpd php php-mysql
+          systemctl enable httpd
+          systemctl start httpd
+          cd /var/www/html
+          echo "healthy" > healthy.html
+          wget https://wordpress.org/wordpress-6.7.1.tar.gz
+          tar -xzf wordpress-6.7.1.tar.gz
+          cp -r wordpress/* /var/www/html/
+          rm -rf wordpress wordpress-6.7.1.tar.gz
+          chown -R apache:apache /var/www/html
