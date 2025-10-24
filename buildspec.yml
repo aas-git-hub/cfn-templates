@@ -4,6 +4,7 @@ env:
   variables:
     AWS_REGION: "ca-central-1"
     TEMPLATE_FILE: "ec2.yaml"
+    STACK_NAME: "ec2-stack"
 
 phases:
   install:
@@ -11,9 +12,6 @@ phases:
       python: 3.9
     commands:
       - echo "=== INSTALL PHASE START ==="
-      - echo "Removing any conflicting AWS CLI versions..."
-      - sudo rm -f /usr/local/bin/aws || true
-      - sudo rm -f /usr/bin/aws || true
       - echo "Installing AWS CLI v2..."
       - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
       - unzip -q awscliv2.zip
@@ -30,10 +28,18 @@ phases:
   build:
     commands:
       - echo "=== BUILD PHASE START ==="
-      - aws cloudformation deploy \
-          --region $AWS_REGION \
-          --template-file $TEMPLATE_FILE \
-          --stack-name ec2-stack \
+      # ✅ use YAML block literal syntax for clarity
+      - |
+        aws cloudformation deploy \
+          --region "$AWS_REGION" \
+          --template-file "$TEMPLATE_FILE" \
+          --stack-name "$STACK_NAME" \
+          --parameter-overrides \
+            ParameterKey=EC2AMIID,ParameterValue=ami-03814457ed908d8f6 \
+            ParameterKey=EC2KeyPairName,ParameterValue=andrew-keypair \
+            ParameterKey=EC2InstanceType,ParameterValue=t2.micro \
+            ParameterKey=SubnetID,ParameterValue=subnet-0d4cc4dcd1ae2b192 \
+            ParameterKey=SecurityGroupID,ParameterValue=sg-0de74e2ea3383ef00 \
           --capabilities CAPABILITY_NAMED_IAM
       - echo "=== BUILD PHASE END ==="
 
