@@ -25,23 +25,23 @@ phases:
       - aws cloudformation validate-template --region $AWS_REGION --template-body file://$TEMPLATE_FILE
       - echo "=== PRE_BUILD PHASE END ==="
 
-  build:
+    build:
     commands:
       - echo "=== BUILD PHASE START ==="
-      # ✅ use YAML block literal syntax for clarity
-      - |
-        aws cloudformation deploy \
-          --region "$AWS_REGION" \
-          --template-file "$TEMPLATE_FILE" \
-          --stack-name "$STACK_NAME" \
-          --parameter-overrides \
-            ParameterKey=EC2AMIID,ParameterValue=ami-03814457ed908d8f6 \
-            ParameterKey=EC2KeyPairName,ParameterValue=andrew-keypair \
-            ParameterKey=EC2InstanceType,ParameterValue=t2.micro \
-            ParameterKey=SubnetID,ParameterValue=subnet-0d4cc4dcd1ae2b192 \
-            ParameterKey=SecurityGroupID,ParameterValue=sg-0de74e2ea3383ef00 \
-          --capabilities CAPABILITY_NAMED_IAM
+      - >
+        aws cloudformation deploy
+        --region "$AWS_REGION"
+        --template-file "$TEMPLATE_FILE"
+        --stack-name "$STACK_NAME"
+        --capabilities CAPABILITY_NAMED_IAM
+        --parameter-overrides
+        EC2AMIID=ami-03814457ed908d8f6
+        EC2KeyPairName=andrew-keypair
+        EC2InstanceType=t2.micro
+        SubnetID=subnet-0d4cc4dcd1ae2b192
+        SecurityGroupID=sg-0de74e2ea3383ef00
       - echo "=== BUILD PHASE END ==="
+
 
   post_build:
     commands:
